@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>甩甩/ Live chat </title>
+  
+  <link rel="stylesheet" href="/static/css/reset.css">
+      <link rel="stylesheet" href="/static/css/chat.css">
+</head>
+
+<body>
+  	<div class="ui">
+		<div class="left-menu">
+				<form action="#" class="search">
+					<input placeholder="search..." type="search" name="" id="">
+					<input type="submit" value="&#xf002;">
+				</form>
+				<menu class="list-friends">
+
+					
+				</menu>
+		</div>
+		<div class="chat">
+			<div class="top">
+				<div class="avatar">
+					<img width="50" height="50" src="/static/images/user_1.jpeg">
+				</div>
+				<div class="info">
+					<div class="name">甩甩的聊天室</div>
+					<div class="count">老司机开车啦。。。</div>
+				</div>
+				<i class="fa fa-star"></i>
+			</div>
+			<ul class="messages">
+			</ul>
+			<div class="write-form">
+				<textarea placeholder="Type your message" name="e" id="texxt"  rows="2"></textarea>
+				<i class="fa fa-picture-o"></i>
+				<i class="fa fa-file-o"></i>
+				<span class="send">Send</span>
+			</div>
+		</div>
+	</div>
+  <script src='/static/js/jquery.min.js'></script>
+<script src='/static/js/jquery.nicescroll.js'></script>
+
+    <!-- <script src="/static/js/chat.js"></script> -->
+<script>
+
+
+	$(function(){
+
+		
+
+
+		var conf = {
+		    cursorcolor: "#696c75",
+		    cursorwidth: "4px",
+		    cursorborder: "none"
+		  };
+
+		 var lol = {
+		    cursorcolor: "#cdd2d6",
+		    cursorwidth: "4px",
+		    cursorborder: "none"
+		  };
+
+
+    var onuserList=function(){
+    	$(".list-friends").empty();
+    	$.ajax({
+			type:"Get",
+			url:"/chatroom/user",
+			dataType:"json",
+			success:function(res){
+				if (res.code==200){
+					for(var i=0;i<res.data.length;i++){
+						var item=res.data[i];
+						console.log("item: "+item.User.UserName);
+						$(".list-friends").append("<li><img width=\"50\" height=\"50\" src=\""+item.User.Pic+"\"><div class=\"info\"><div class=\"user\">"+item.User.UserName+"</div><div class=\"status on\"> online</div></div></li>");
+					}
+				}
+			},
+			error:function(){
+				alert("请求服务器错误");
+			}
+		});
+    }
+
+    onuserList();
+
+	var socket=new WebSocket("ws://"+window.location.host+"/ws/join")
+	socket.onmessage=function(event){
+		var data=JSON.parse(event.data);
+		if(data.Type==2){
+			onuserList();
+		}
+		receive(data);
+	}
+
+	var receive=function(data){
+		  $(".messages").append("<li class=\"friend-with-a-SVAGina\"><div class=\"head\"><img width=\"50\" height=\"50\" src=\""+data.User.Pic+"\"><span class=\"name\">"+data.User.UserName+"  </span><span class=\"time\">" + (new Date().getHours()) + ":" + (new Date().getMinutes()) + " AM, Today</span></div><div class=\"message\">" + data.Content + "</div></li>");
+          claerResizeScroll();
+	}
+
+
+	var postContent=function(){
+		var content=$.trim($("#texxt").val());
+		socket.send(content);
+	}
+
+	 claerResizeScroll = function() {
+	    $("#texxt").val("");
+	    $(".messages").getNiceScroll(0).resize();
+	    return $(".messages").getNiceScroll(0).doScrollTop(999999, 999);
+	  };
+
+	  insertI = function() {
+	    var innerText;
+	    innerText = $.trim($("#texxt").val());
+	    if (innerText !== "") {
+	      $(".messages").append("<li class=\"i\"><div class=\"head\"><span class=\"time\">" + (new Date().getHours()) + ":" + (new Date().getMinutes()) + " AM, Today</span><span class=\"name\"> "+{{.user.UserName}}+"</span><img width=\"50\" height=\"50\" src=\""+{{.user.Pic}} +"\"></div><div class=\"message\">" + innerText + "</div></li>");
+	      postContent();
+	      claerResizeScroll();
+	    }
+	  };
+
+
+		 $(document).ready(function() {
+	    $(".list-friends").niceScroll(conf);
+	    $(".messages").niceScroll(lol);
+	    $("#texxt").keypress(function(e) {
+	      if (e.keyCode === 13) {
+	        insertI();
+	        return false;
+	      }
+	    });
+	    return $(".send").click(function() {
+	      return insertI();
+	    });
+	  });
+})
+ 
+
+ 
+</script>
+</body>
+</html>
+
+<!-- 
+
+	
+</script>
+</body>
+</html> -->

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>webrtc</title>
+</head>
+<body>
+
+<div id="chat">
+    
+</div>
+<div id="videos">
+    <video id="me" autoplay>
+        
+    </video>
+</div>
+</body>
+
+<script type="text/javascript" src="/static/js/skyrtc.js"></script>
+<script type="text/javascript">
+   var videos=document.getElementById("videos");
+   var rtc=SkyRTC();
+
+
+   rtc.on("connected",function(socket){
+    console.log("connected");
+    rtc.createStream({
+        "video":true,
+        "audio":true
+    });
+   });
+
+   rtc.on("stream_created",function(stream){
+    console.log("stream_created");
+    document.getElementById("me").src=URL.createObjectURL(stream);
+    document.getElementById("me").play();
+   });
+
+   rtc.on("stream_create_error", function() {
+    alert("create stream failed!");
+  });
+
+   rtc.on('pc_add_stream',function(stream,socketId){
+    var newVideo=document.createElement("video"),id="other"+socketId;
+    newVideo.setAttribute("autoplay","autoplay");
+    newVideo.setAttribute("id",id);
+    videos.appendChild(newVideo);
+    rtc.attachStream(stream,id);
+   });
+
+    rtc.connect("ws:" + window.location.href.substring(window.location.protocol.length).split('#')[0]+"/ws", window.location.hash.slice(1));
+</script>
+
+
+</html>
